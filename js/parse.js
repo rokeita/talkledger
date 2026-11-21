@@ -40,6 +40,28 @@ function cedisToPesewas(val) {
 }
 
 /**
+ * English number-word map: one–ten.
+ * Applied before quantity extraction, the same way replaceTwiNumbers is applied.
+ */
+const ENGLISH_NUMBER_WORDS = {
+  one: 1, two: 2, three: 3, four: 4, five: 5,
+  six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
+};
+
+/**
+ * Replace English number words (one–ten) with their digit equivalents.
+ * Only replaces whole words to avoid partial matches inside other words.
+ * @param {string} text
+ * @returns {string}
+ */
+function replaceEnglishNumbers(text) {
+  return text.replace(
+    /\b(one|two|three|four|five|six|seven|eight|nine|ten)\b/gi,
+    (match) => ENGLISH_NUMBER_WORDS[match.toLowerCase()]
+  );
+}
+
+/**
  * Parse sale text into a structured entry fragment.
  *
  * @param {string} rawText
@@ -49,10 +71,11 @@ function cedisToPesewas(val) {
 function parseSaleText(rawText) {
   if (!rawText || !rawText.trim()) return { ok: false };
 
-  // 1. Swap Twi number words → digits (depends on twi-dict.js)
+  // 1. Swap Twi number words → digits (depends on twi-dict.js), then English number words → digits
   let text = (typeof replaceTwiNumbers === 'function')
     ? replaceTwiNumbers(rawText.trim())
     : rawText.trim();
+  text = replaceEnglishNumbers(text);
 
   // Normalise: collapse whitespace
   text = text.replace(/\s+/g, ' ');
