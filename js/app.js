@@ -46,7 +46,7 @@
       }),
       createEntry({
         type:          'expense',
-        item:          'MoMo received',
+        item:          'MoMo fee',
         qty:           1,
         amountPesewas: 500,
         source:        'manual',

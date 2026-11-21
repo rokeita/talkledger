@@ -158,6 +158,21 @@
     };
 
     r.onerror = (event) => {
+      // If en-GH is not supported, retry once with en-US.
+      if (event.error === 'language-not-supported' && r.lang === 'en-GH') {
+        r.lang = 'en-US';
+        try {
+          _recognition = createRecognition();
+          _recognition.lang = 'en-US';
+          _recognition.start();
+        } catch (err) {
+          setListeningState(false);
+          hideConfirmCard();
+          showVoiceMsg('Could not start the microphone: ' + err.message, 'error');
+        }
+        return;
+      }
+
       setListeningState(false);
       hideConfirmCard();
 
