@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="TalkLedger — speak a sale, file it instantly. Bookkeeping for Ghanaian small businesses." />
+  <meta name="theme-color" content="#1a2b1f" />
+  <title>TalkLedger</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ===== Header ===== -->
+  <header class="app-header">
+    <h1>TalkLedger</h1>
+    <span class="tagline">Speak a sale, file it.</span>
+  </header>
+
+  <!-- ===== Navigation tabs ===== -->
+  <nav class="nav-tabs" role="tablist" aria-label="App sections">
+    <button class="nav-tab" id="tab-today"  role="tab" aria-selected="true"  aria-controls="section-today">Today</button>
+    <button class="nav-tab" id="tab-record" role="tab" aria-selected="false" aria-controls="section-record">Record</button>
+    <button class="nav-tab" id="tab-ledger" role="tab" aria-selected="false" aria-controls="section-ledger">Ledger</button>
+  </nav>
+
+  <main>
+
+    <!-- ===== Section 1: Today ===== -->
+    <section id="section-today" class="section active" role="tabpanel" aria-labelledby="tab-today">
+
+      <div class="today-grid">
+        <div class="today-card balance">
+          <div class="label">Balance today</div>
+          <div class="value" id="today-balance">GH₵0.00</div>
+        </div>
+        <div class="today-card sales">
+          <div class="label">Sales</div>
+          <div class="value" id="today-sales">GH₵0.00</div>
+        </div>
+        <div class="today-card expenses">
+          <div class="label">Expenses</div>
+          <div class="value" id="today-expenses">GH₵0.00</div>
+        </div>
+        <div class="today-card count">
+          <div class="label">Entries</div>
+          <div class="value" id="today-count">0</div>
+        </div>
+      </div>
+
+      <!-- Today's ledger preview -->
+      <div class="card">
+        <h2>Today's entries</h2>
+        <ul class="entry-list" id="today-entry-list" aria-label="Today's entries">
+          <!-- Populated by app.js -->
+        </ul>
+        <div id="today-empty" class="empty-state hidden">
+          <p>No entries yet today.</p>
+          <p>Tap <strong>Record</strong> to log a sale.</p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ===== Section 2: Record ===== -->
+    <section id="section-record" class="section" role="tabpanel" aria-labelledby="tab-record">
+
+      <!-- Voice entry -->
+      <div class="card" id="voice-card">
+        <h2>Voice entry</h2>
+
+        <button class="voice-btn" id="voice-btn" aria-label="Tap to record a sale by voice" title="Tap to speak a sale">
+          🎙
+        </button>
+        <p class="voice-label" id="voice-label">Tap the mic and say something like<br>"sold 3 bags of rice 45 cedis"</p>
+
+        <!-- Error / status message area -->
+        <div id="voice-msg" class="hidden" role="alert"></div>
+
+        <!-- Confirm card (shown after a successful transcription) -->
+        <div id="confirm-card" class="confirm-card hidden">
+          <h3>Confirm sale</h3>
+          <p class="transcript" id="confirm-transcript"></p>
+          <div class="parsed-row">
+            <span id="confirm-item"></span>
+            <span id="confirm-qty"></span>
+            <span id="confirm-amount"></span>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary btn-sm" id="confirm-save-btn">Confirm</button>
+            <button class="btn btn-ghost   btn-sm" id="confirm-edit-btn">Edit</button>
+            <button class="btn btn-ghost   btn-sm" id="confirm-cancel-btn">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <hr class="divider" />
+
+      <!-- Manual entry form -->
+      <div class="card">
+        <h2>Manual entry</h2>
+
+        <form id="manual-form" novalidate>
+          <div class="form-group">
+            <label for="manual-item">Item / description</label>
+            <input type="text" id="manual-item" name="item" placeholder="e.g. bags of rice" autocomplete="off" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="manual-qty">Quantity</label>
+              <input type="number" id="manual-qty" name="qty" placeholder="1" min="0" step="any" />
+            </div>
+            <div class="form-group">
+              <label for="manual-amount">Amount (GH₵)</label>
+              <input type="number" id="manual-amount" name="amount" placeholder="0.00" min="0" step="0.01" inputmode="decimal" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="manual-type">Type</label>
+            <select id="manual-type" name="type" style="width:100%;min-height:var(--tap-min);padding:8px 16px;border:1.5px solid var(--color-border);border-radius:8px;font-size:1rem;background:var(--color-surface);color:inherit;">
+              <option value="sale">Sale (money in)</option>
+              <option value="expense">Expense (money out)</option>
+            </select>
+          </div>
+          <div id="manual-msg" class="hidden" role="alert"></div>
+          <button type="submit" class="btn btn-primary btn-block">Save entry</button>
+        </form>
+      </div>
+
+      <hr class="divider" />
+
+      <!-- SMS paste -->
+      <div class="card">
+        <h2>Paste MoMo SMS</h2>
+        <div class="form-group">
+          <label for="sms-input">Paste your MTN MoMo receipt text here</label>
+          <textarea id="sms-input" placeholder="e.g. You have received GHS 45.00 from Kofi Mensah…"></textarea>
+        </div>
+        <div id="sms-msg" class="hidden" role="alert"></div>
+
+        <!-- SMS confirm card -->
+        <div id="sms-confirm-card" class="confirm-card hidden">
+          <h3>Confirm MoMo entry</h3>
+          <div class="parsed-row">
+            <span id="sms-confirm-type"></span>
+            <span id="sms-confirm-amount"></span>
+            <span id="sms-confirm-ref"></span>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary btn-sm" id="sms-save-btn">Save</button>
+            <button class="btn btn-ghost   btn-sm" id="sms-cancel-btn">Cancel</button>
+          </div>
+        </div>
+
+        <button class="btn btn-ghost btn-block" id="sms-parse-btn" style="margin-top:8px;">Parse receipt</button>
+      </div>
+
+    </section>
+
+    <!-- ===== Section 3: Ledger ===== -->
+    <section id="section-ledger" class="section" role="tabpanel" aria-labelledby="tab-ledger">
+
+      <div class="ledger-controls">
+        <label for="ledger-date-filter">Filter by date</label>
+        <input type="date" id="ledger-date-filter" aria-label="Filter entries by date" />
+        <button class="btn btn-ghost btn-sm" id="ledger-clear-filter-btn">Show all</button>
+      </div>
+
+      <div id="samples-banner" class="msg msg-info hidden">
+        These are sample entries so you can see how the app works.
+        <button class="btn btn-ghost btn-sm" id="clear-samples-btn" style="margin-top:8px;display:block;">Clear samples</button>
+      </div>
+
+      <ul class="entry-list" id="ledger-entry-list" aria-label="All entries">
+        <!-- Populated by app.js -->
+      </ul>
+
+      <div id="ledger-empty" class="empty-state hidden">
+        <p>No entries found.</p>
+      </div>
+
+      <hr class="divider" />
+
+      <button class="btn btn-danger btn-sm" id="clear-all-btn" style="display:block;margin:0 auto;">
+        Clear all data
+      </button>
+
+    </section>
+
+  </main>
+
+  <!-- ===== JS modules (order matters: utilities before wiring) ===== -->
+  <script src="js/storage.js"></script>
+  <script src="js/ledger.js"></script>
+  <script src="js/twi-dict.js"></script>
+  <script src="js/parse.js"></script>
+  <script src="js/voice.js"></script>
+  <script src="js/sms.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
